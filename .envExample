@@ -1,9 +1,75 @@
+# =============================================================================
+# DISCORD
+# =============================================================================
+
+# Token de autenticação do bot Discord.
+# Obtido em: https://discord.com/developers/applications → Bot → Token
 API_KEY = token_bot_discord
-CANAL_LANCAMENTOS = channel_id
-CANAL_TESTES = channel_id_tests
-CANAL_TAGS = channel_id_tags
 
-API_ID_PAGINA_FACEBOOK = api_facebook
-API_TOKEN_PAGINA = token_facebook_page
+# ID do canal Discord onde as postagens de lançamentos reais serão enviadas.
+# Para obter o ID: ative o Modo Desenvolvedor no Discord, clique com botão direito
+# no canal → Copiar ID
+CANAL_LANCAMENTOS = channel_id_canal_lancamentos
 
-URL_SITE = url_do_site_sem_https//:
+# ID do canal Discord usado para postagens em modo de teste.
+# As mensagens de teste são enviadas aqui em vez do canal de produção.
+CANAL_TESTES = channel_id_canal_testes
+
+# ID do canal Discord onde as postagens com tags/menções de obras são enviadas.
+CANAL_TAGS = channel_id_canal_tags
+
+# =============================================================================
+# MONGODB ATLAS
+# =============================================================================
+
+# URI de conexão com o cluster do MongoDB Atlas.
+# Obtida em: Atlas Console → Database → Connect → Drivers
+# Formato: mongodb+srv://<usuario>:<senha>@<cluster>.mongodb.net/?retryWrites=true&w=majority
+URI_ATLAS = mongodb+srv://usuario:senha@cluster.mongodb.net/?retryWrites=true&w=majority
+
+# =============================================================================
+# FACEBOOK (Produção)
+# =============================================================================
+
+# ID numérico da página do Facebook onde os anúncios serão publicados.
+# Obtido em: Configurações da Página → Informações da Página → ID da Página
+API_ID_PAGINA_FACEBOOK = id_numerico_da_pagina_facebook
+
+# Token de acesso de longa duração da página do Facebook (produção).
+# Gerado via: https://developers.facebook.com/tools/explorer/
+# Permissões necessárias: pages_manage_posts, pages_read_engagement, publish_to_groups
+API_TOKEN_PAGINA = token_de_acesso_da_pagina_facebook
+
+# =============================================================================
+# FACEBOOK (Testes)
+# Usadas apenas quando ENABLE_FB_TEST=true. Permitem testar a integração com o
+# Facebook sem publicar na página de produção.
+# =============================================================================
+
+# ID numérico da página do Facebook de testes.
+API_ID_PAGINA_FACEBOOK_TESTE = id_numerico_da_pagina_de_teste
+
+# Token de acesso de longa duração da página do Facebook de testes.
+API_TOKEN_PAGINA_TESTE = token_de_acesso_da_pagina_de_teste
+
+# Ativa o modo de teste do Facebook.
+# Quando "true", as postagens são feitas na página de teste (acima) em vez da produção.
+# Quando "false" ou ausente, usa as credenciais de produção.
+# Padrão: false
+ENABLE_FB_TEST = false
+
+# =============================================================================
+# GOOGLE GEMINI
+# =============================================================================
+
+# Chave de API do Google Gemini, usada para geração de descrições das obras.
+# Obtida em: https://aistudio.google.com/app/apikey
+GEMINI_API = chave_de_api_do_gemini
+
+# =============================================================================
+# WEB SCRAPER
+# =============================================================================
+
+# URL base do site alvo do scraper, sem protocolo (http:// ou https://).
+# Exemplo: tsundoku.com.br
+URL_SITE = url_do_site_sem_protocolo

@@ -1,8 +1,11 @@
+from dotenv import load_dotenv
 from src.dao.atlas_dao import AtlasDAO
 from src.model.obra import Obra
 from src.model.capitulo import Capitulo
 from src.controller.controller_obras import ControllerObras
 from src.dao.web_screper_site import WebScreperSite
+
+load_dotenv()
 
 class TestPostagem:
     def test_verifica_remocao_obras_nao_registradas(self):

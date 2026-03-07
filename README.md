@@ -31,7 +31,7 @@ flowchart TD
         OBRA["Obra"]
         CAPITULO["Capitulo"]
         POST_DC["PostDiscord\nMonta o embed\ndo anúncio"]
-        POST_FB["PostFacebook\n(desativado)"]
+        POST_FB["PostFacebook"]
         MSGS["Mensagens\nLogs e prints"]
         LOGGER["LoggerConfig\nConfiguração de logs"]
     end
@@ -105,7 +105,7 @@ flowchart TD
 | Variável | Descrição |
 |---|---|
 | `API_ID_PAGINA_FACEBOOK` | ID numérico da página do Facebook de produção onde os posts serão publicados |
-| `API_TOKEN_PAGINA` | Page Access Token da página de produção. Deve ter as permissões `pages_manage_posts` e `pages_read_engagement` |
+| `API_TOKEN_PAGINA` | Page Access Token de longa duração da página de produção. Veja [configuracao_facebook.md](docs/configuracao_facebook.md) para instruções de geração |
 | `API_ID_PAGINA_FACEBOOK_TESTE` | ID numérico da página de teste (usada apenas quando `ENABLE_FB_TEST=true`) |
 | `API_TOKEN_PAGINA_TESTE` | Page Access Token da página de teste |
 | `ENABLE_FB_TEST` | `"true"` para habilitar os testes unitários de postagem no Facebook. Por padrão `"false"` para evitar postagens acidentais |
@@ -114,87 +114,7 @@ flowchart TD
 
 ## Configuração do Facebook
 
-### Pré-requisitos
-
-- Conta de desenvolvedor Meta: https://developers.facebook.com
-- App criado no painel de desenvolvedores (tipo: **Business**)
-- Página do Facebook onde os posts serão publicados
-- A conta deve ser **Administrador** da página
-
-### 1. Criar o App no Meta for Developers
-
-1. Acesse https://developers.facebook.com/apps
-2. Clique em **Create App** → selecione o tipo **Business**
-3. Preencha o nome do app e o e-mail de contato
-4. O app começa no modo **Desenvolvimento** — suficiente para testes
-
-### 2. Configurar permissões do App
-
-1. No painel do app, vá em **App Review → Permissions and Features**
-2. Certifique-se de que as seguintes permissões estão presentes:
-   - `pages_manage_posts` ✅
-   - `pages_read_engagement` ✅
-   - `pages_show_list` ✅
-3. **Remova** `publish_actions` se estiver listado — está **deprecated** e bloqueia qualquer postagem com erro 403
-
-### 3. Gerar o Page Access Token
-
-O token necessário é um **Page Access Token**, não um User Token.
-
-1. Acesse https://developers.facebook.com/tools/explorer
-2. Selecione o seu app no dropdown **"App da Meta"**
-3. Em **Permissions**, adicione:
-   - `pages_manage_posts`
-   - `pages_read_engagement`
-   - `pages_show_list`
-4. Clique em **Generate Access Token** e autorize
-5. No campo da query, coloque `/me/accounts` e clique **Enviar**
-6. Na resposta JSON, localize a página desejada dentro de `data[]`:
-   ```json
-   {
-     "data": [
-       {
-         "name": "Nome da Página",
-         "id": "110041288738055",
-         "access_token": "EAACxxx..."
-       }
-     ]
-   }
-   ```
-7. Copie o `access_token` e o `id` da página
-
-> ⚠️ O token gerado pelo Explorer é de **curta duração** (~1h). Para produção, converta para long-lived token via:
-> ```
-> GET https://graph.facebook.com/v25.0/oauth/access_token
->   ?grant_type=fb_exchange_token
->   &client_id={app_id}
->   &client_secret={app_secret}
->   &fb_exchange_token={short_lived_token}
-> ```
-
-### 4. Atualizar o `.env`
-
-```ini
-API_ID_PAGINA_FACEBOOK = "ID_DA_PAGINA"
-API_TOKEN_PAGINA = "PAGE_ACCESS_TOKEN"
-
-# Para testes (pode ser a mesma página ou uma página separada)
-API_ID_PAGINA_FACEBOOK_TESTE = "ID_DA_PAGINA_TESTE"
-API_TOKEN_PAGINA_TESTE = "PAGE_ACCESS_TOKEN_TESTE"
-ENABLE_FB_TEST = "false"
-```
-
-### 5. Testar a integração
-
-```bash
-# Habilitar testes de Facebook no .env:
-ENABLE_FB_TEST = "true"
-
-# Executar apenas os testes de Facebook:
-pytest tests/test_dao_conexao_facebook.py -v
-```
-
-> Ao terminar os testes, retorne `ENABLE_FB_TEST = "false"` para evitar postagens acidentais nas próximas execuções do `pytest`.
+Consulte o guia completo em [docs/configuracao_facebook.md](docs/configuracao_facebook.md).
 
 ---
 
@@ -213,7 +133,7 @@ bot-notification/
 │   ├── dao/
 │   │   ├── atlas_dao.py             # Acesso ao MongoDB Atlas
 │   │   ├── conexao_discord.py       # Envio de mensagens ao Discord
-│   │   ├── conexao_facebook.py      # Integração Facebook (desativada)
+│   │   ├── conexao_facebook.py      # Integração Facebook (Graph API v25.0)
 │   │   ├── gemini_dao.py            # Integração Google Gemini AI
 │   │   └── web_screper_site.py      # Web scraping do site de mangás
 │   ├── endpoint/
@@ -226,7 +146,7 @@ bot-notification/
 │       ├── obra.py                  # Entidade Obra
 │       └── posts/
 │           ├── post_discord.py      # Modelo do embed Discord
-│           └── post_facebook.py     # Modelo do post Facebook (desativado)
+│           └── post_facebook.py     # Modelo do post Facebook
 ├── assets/                          # Volume Docker (persistente)
 │   ├── config/
 │   │   └── test_mode.txt            # "true" para modo de teste
