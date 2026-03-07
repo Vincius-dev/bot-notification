@@ -11,9 +11,22 @@ class PostFacebook:
 
         self.lista_de_capitulos = obra.lista_de_capitulos
 
-        self.imagem_obra = dados_unicos_obras[self.titulo_obra]['url_imagem']
+        # Itera sobre a lista de obras (mesmo padrão do PostDiscord) em vez de
+        # indexar como dict, o que causaria TypeError pois dados_unicos_obras é list.
+        obra_encontrada = None
+        for dados_obra in dados_unicos_obras:
+            if dados_obra.get('titulo') == self.titulo_obra:
+                obra_encontrada = dados_obra
+                break
 
-        self.logger_infos.info(f"Construindo Post {self.titulo_obra }...")
+        if obra_encontrada:
+            self.imagem_obra = obra_encontrada['url_imagem']
+        else:
+            self.logger_infos.warning(
+                f"Obra '{self.titulo_obra}' não encontrada em dados_unicos_obras."
+            )
+
+        self.logger_infos.info(f"Construindo Post {self.titulo_obra}...")
 
     
     def retornar_mensagem_post(self):

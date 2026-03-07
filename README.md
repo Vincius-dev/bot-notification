@@ -79,14 +79,122 @@ flowchart TD
 
 ### Variáveis de ambiente (`.env`)
 
+#### Discord
+
 | Variável | Descrição |
 |---|---|
-| `URI_ATLAS` | URI de conexão com o MongoDB Atlas |
-| `API_KEY` | Token do bot Discord |
-| `CANAL_LANCAMENTOS` | ID do canal de lançamentos |
-| `CANAL_TAGS` | ID do canal de tags/cargos |
-| `CANAL_TESTES` | ID do canal usado em modo de teste |
-| `GEMINI_API` | Chave da API do Google Gemini |
+| `API_KEY` | Token do bot Discord. Obtido em https://discord.com/developers/applications → Bot → Token |
+| `CANAL_LANCAMENTOS` | ID do canal onde os anúncios de lançamentos são postados em produção |
+| `CANAL_TESTES` | ID do canal usado quando o bot é executado em modo de teste |
+| `CANAL_TAGS` | ID do canal de tags/cargos, usado para menções nos embeds |
+
+#### MongoDB Atlas
+
+| Variável | Descrição |
+|---|---|
+| `URI_ATLAS` | URI de conexão com o cluster MongoDB Atlas. Formato: `mongodb+srv://<user>:<password>@<cluster>.mongodb.net/` |
+
+#### Google Gemini
+
+| Variável | Descrição |
+|---|---|
+| `GEMINI_API` | Chave da API do Google Gemini AI. Obtida em https://aistudio.google.com/app/apikey |
+
+#### Facebook
+
+| Variável | Descrição |
+|---|---|
+| `API_ID_PAGINA_FACEBOOK` | ID numérico da página do Facebook de produção onde os posts serão publicados |
+| `API_TOKEN_PAGINA` | Page Access Token da página de produção. Deve ter as permissões `pages_manage_posts` e `pages_read_engagement` |
+| `API_ID_PAGINA_FACEBOOK_TESTE` | ID numérico da página de teste (usada apenas quando `ENABLE_FB_TEST=true`) |
+| `API_TOKEN_PAGINA_TESTE` | Page Access Token da página de teste |
+| `ENABLE_FB_TEST` | `"true"` para habilitar os testes unitários de postagem no Facebook. Por padrão `"false"` para evitar postagens acidentais |
+
+---
+
+## Configuração do Facebook
+
+### Pré-requisitos
+
+- Conta de desenvolvedor Meta: https://developers.facebook.com
+- App criado no painel de desenvolvedores (tipo: **Business**)
+- Página do Facebook onde os posts serão publicados
+- A conta deve ser **Administrador** da página
+
+### 1. Criar o App no Meta for Developers
+
+1. Acesse https://developers.facebook.com/apps
+2. Clique em **Create App** → selecione o tipo **Business**
+3. Preencha o nome do app e o e-mail de contato
+4. O app começa no modo **Desenvolvimento** — suficiente para testes
+
+### 2. Configurar permissões do App
+
+1. No painel do app, vá em **App Review → Permissions and Features**
+2. Certifique-se de que as seguintes permissões estão presentes:
+   - `pages_manage_posts` ✅
+   - `pages_read_engagement` ✅
+   - `pages_show_list` ✅
+3. **Remova** `publish_actions` se estiver listado — está **deprecated** e bloqueia qualquer postagem com erro 403
+
+### 3. Gerar o Page Access Token
+
+O token necessário é um **Page Access Token**, não um User Token.
+
+1. Acesse https://developers.facebook.com/tools/explorer
+2. Selecione o seu app no dropdown **"App da Meta"**
+3. Em **Permissions**, adicione:
+   - `pages_manage_posts`
+   - `pages_read_engagement`
+   - `pages_show_list`
+4. Clique em **Generate Access Token** e autorize
+5. No campo da query, coloque `/me/accounts` e clique **Enviar**
+6. Na resposta JSON, localize a página desejada dentro de `data[]`:
+   ```json
+   {
+     "data": [
+       {
+         "name": "Nome da Página",
+         "id": "110041288738055",
+         "access_token": "EAACxxx..."
+       }
+     ]
+   }
+   ```
+7. Copie o `access_token` e o `id` da página
+
+> ⚠️ O token gerado pelo Explorer é de **curta duração** (~1h). Para produção, converta para long-lived token via:
+> ```
+> GET https://graph.facebook.com/v25.0/oauth/access_token
+>   ?grant_type=fb_exchange_token
+>   &client_id={app_id}
+>   &client_secret={app_secret}
+>   &fb_exchange_token={short_lived_token}
+> ```
+
+### 4. Atualizar o `.env`
+
+```ini
+API_ID_PAGINA_FACEBOOK = "ID_DA_PAGINA"
+API_TOKEN_PAGINA = "PAGE_ACCESS_TOKEN"
+
+# Para testes (pode ser a mesma página ou uma página separada)
+API_ID_PAGINA_FACEBOOK_TESTE = "ID_DA_PAGINA_TESTE"
+API_TOKEN_PAGINA_TESTE = "PAGE_ACCESS_TOKEN_TESTE"
+ENABLE_FB_TEST = "false"
+```
+
+### 5. Testar a integração
+
+```bash
+# Habilitar testes de Facebook no .env:
+ENABLE_FB_TEST = "true"
+
+# Executar apenas os testes de Facebook:
+pytest tests/test_dao_conexao_facebook.py -v
+```
+
+> Ao terminar os testes, retorne `ENABLE_FB_TEST = "false"` para evitar postagens acidentais nas próximas execuções do `pytest`.
 
 ---
 
