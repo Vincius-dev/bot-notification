@@ -14,8 +14,10 @@ node_modules/
 
 # Credenciais de Ambiente
 .env
+.env.dev
 
 
 ## cache python
 __pycache__/
 *.py[cod]
+*.pyc

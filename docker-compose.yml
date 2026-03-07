@@ -1,0 +1,31 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: bot-notification-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_dev_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: DadosPostagem
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile-dev
+    container_name: bot-notification-app
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    env_file:
+      - .env.dev
+    environment:
+      # Sobrescreve a URI para usar o serviço 'mongo' do compose
+      URI_ATLAS: mongodb://mongo:27017/
+    volumes:
+      - assets_dev:/home/project/assets
+
+volumes:
+  mongo_dev_data:
+  assets_dev:

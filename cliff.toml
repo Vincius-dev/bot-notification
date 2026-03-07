@@ -1,0 +1,49 @@
+[changelog]
+header = """
+# Changelog\n
+Todas as mudanças relevantes deste projeto estão documentadas aqui.\n
+"""
+body = """
+{% if version %}\
+## [{{ version | trim_start_matches(pat="v") }}] — {{ timestamp | date(format="%d/%m/%Y") }}
+{% else %}\
+## [Não versionado]
+{% endif %}\
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group }}
+{% for commit in commits %}
+- {% if commit.scope %}**{{ commit.scope }}:** {% endif %}{{ commit.message | upper_first }}\
+{% if commit.breaking %} ⚠️ BREAKING CHANGE{% endif %}\
+
+{% endfor %}
+{% endfor %}\n
+"""
+footer = ""
+trim = true
+
+[git]
+conventional_commits = true
+filter_unconventional = true
+split_commits = false
+
+# Ordenação dos commits dentro de cada grupo
+commit_parsers = [
+  { message = "^feat",     group = "🚀 Novidades" },
+  { message = "^fix",      group = "🐛 Correções" },
+  { message = "^refactor", group = "♻️  Refatorações" },
+  { message = "^perf",     group = "⚡ Performance" },
+  { message = "^test",     group = "🧪 Testes" },
+  { message = "^docs?",    group = "📝 Documentação" },
+  { message = "^chore",    group = "🔧 Manutenção" },
+  { message = "^ci",       group = "⚙️  CI/CD" },
+  { message = "^build",    group = "📦 Build" },
+  # ignora commits de merge e bump de versão
+  { message = "^Merge",    skip = true },
+  { message = "^bump",     skip = true },
+]
+
+protect_breaking_commits = false
+filter_commits = true
+tag_pattern = "v[0-9].*"
+topo_order = false
+sort_commits = "newest"

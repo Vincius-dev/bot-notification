@@ -225,15 +225,22 @@ class AtlasDAO:
             Mensagens.erro_no_banco_de_dados(f"Erro ao remover registros do MongoDB: {e}")
 
 
-    def inserir_obra_nao_permitida_fb(self, dicionario_obra):
-        db = self.client.DadosPostagem
-        colecao = db.obrasNaoPermitidasFB
+    def inserir_obra_permitida_fb(self, dicionario_obra: dict) -> None:
+        """
+        Insere uma obra na whitelist de postagem do Facebook.
 
-        # Inserir os dados na coleção
+        Parameters:
+            dicionario_obra (dict): documento com a chave 'titulo_obra'.
+        """
+        db = self.client.DadosPostagem
+        colecao = db.obrasPermitidasFB
+
         try:
             colecao.insert_one(dicionario_obra)
         except Exception as e:
-            Mensagens.erro_no_banco_de_dados(f'Erro ao inserir obra não permitida: {e}')
+            Mensagens.erro_no_banco_de_dados(
+                f'Erro ao inserir obra permitida no FB: {e}'
+            )
 
         
     def receber_obras(self):
@@ -252,21 +259,27 @@ class AtlasDAO:
             return []
 
 
-    def listar_obras_nao_permitidas_fb(self):
+    def listar_obras_permitidas_fb(self):
+        """
+        Retorna a lista de obras com permissão explícita de postagem
+        no Facebook, lida da coleção 'obrasPermitidasFB'.
+
+        Returns:
+            list: lista de documentos com a chave 'titulo_obra'.
+        """
         try:
             db = self.client.DadosPostagem
-            colecao = db.obrasNaoPermitidasFB
+            colecao = db.obrasPermitidasFB
 
             projection = {'_id': 0}
 
             todos_documentos = colecao.find({}, projection=projection).sort('titulo_obra', 1)
-            
-            # Convertendo o cursor em uma lista
-            lista_documentos = list(todos_documentos)
 
-            return lista_documentos
+            return list(todos_documentos)
         except Exception as e:
-            Mensagens.erro_no_banco_de_dados(f"Erro ao listar obras não permitidas do MongoDB: {e}")
+            Mensagens.erro_no_banco_de_dados(
+                f"Erro ao listar obras permitidas do MongoDB: {e}"
+            )
             return []
 
 

@@ -3,9 +3,10 @@ import time
 from src.dao.web_screper_site import WebScreperSite
 from src.dao.conexao_discord import ConexaoDiscord
 from src.dao.atlas_dao import AtlasDAO
-#from src.dao.conexao_facebook import ConexaoFacebook
+from src.dao.conexao_facebook import ConexaoFacebook
 from src.controller.controller_obras import ControllerObras
 from src.model.posts.post_discord import PostDiscord
+from src.model.posts.post_facebook import PostFacebook
 from src.classes_io.gestor_txt import GestorTXT
 
 from model.mensagens import Mensagens
@@ -65,21 +66,22 @@ class ControllerPostagem:
 
                 time.sleep(10)
 
-            """ Postagem do FB
-            lista_de_obras_nao_permitidas = atlas_dao.listar_obras_nao_permitidas_fb()
+            # Postagem do FB — apenas obras com permissão explícita (whitelist)
+            lista_de_obras_permitidas_fb = atlas_dao.listar_obras_permitidas_fb()
 
-            lista_de_obras_facebook = ControllerObras.remover_obras_que_nao_pode_postar(lista_de_obras_atualizada,lista_de_obras_nao_permitidas)
+            lista_de_obras_facebook = ControllerObras.filtrar_obras_permitidas_fb(
+                lista_de_obras_atualizada, lista_de_obras_permitidas_fb
+            )
 
             for obra in lista_de_obras_facebook:
                 try:
                     Mensagens.post_facebook(obra.titulo_obra)
                     post_obra_Facebook = PostFacebook(obra, atlas_dao.receber_obras())
-                    #Conexao_Facebook.postar_anuncio_facebook(post_obra_Facebook)
-                
+                    ConexaoFacebook.postar_anuncio_facebook(post_obra_Facebook)
+
                 except Exception as e:
                     Mensagens.erro_no_codigo(e)
                     Mensagens.nao_foi_possivel_postar_facebook()
                     Mensagens.mensagem_nao_foi_possivel_postar_obra(obra.titulo_obra)
 
                 time.sleep(10)
-            """

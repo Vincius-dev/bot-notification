@@ -25,21 +25,24 @@ class TestControllerObras:
 
 
     def test_remover_obras_que_nao_pode_postar(self):
-        # Mock data
+        """
+        Valida a lógica de whitelist: apenas obras presentes na lista
+        de permitidas devem ser retornadas.
+        """
         lista_de_obras_para_postar = [
             Obra("Obra Teste 1", "Teste", "Teste"),
             Obra("Obra Teste 2", "Teste", "Teste"),
             Obra("Obra Teste 3", "Teste", "Teste")
         ]
-        lista_de_obras_nao_permitidas = [
-            {'titulo_obra': 'Obra Teste 2'},
-            {'titulo_obra': 'Obra Teste 3'}
+        # Apenas Obra Teste 1 está na whitelist
+        lista_de_obras_permitidas = [
+            {'titulo_obra': 'Obra Teste 1'},
         ]
 
-        # Call the function
-        obras_filtradas = ControllerObras.remover_obras_que_nao_pode_postar(lista_de_obras_para_postar, lista_de_obras_nao_permitidas)
+        obras_filtradas = ControllerObras.filtrar_obras_permitidas_fb(
+            lista_de_obras_para_postar, lista_de_obras_permitidas
+        )
 
-        # Assert the results
         assert len(obras_filtradas) == 1
         assert obras_filtradas[0].titulo_obra == 'Obra Teste 1'
 

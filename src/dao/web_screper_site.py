@@ -19,8 +19,16 @@ class WebScreperSite:
         logger_infos = logging.getLogger('logger_infos')
         logger_infos.info(" Iniciando Web Screper ")
 
-        # Definir o locale como "pt_BR.UTF-8"
-        locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
+        # Definir o locale como "pt_BR.UTF-8".
+        # Em ambientes sem o locale instalado (ex: WSL sem pt_BR gerado)
+        # a configuração é ignorada com um aviso — o Docker tem o locale.
+        try:
+            locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
+        except locale.Error:
+            logger_infos.warning(
+                "Locale pt_BR.UTF-8 não disponível neste ambiente. "
+                "Datas podem não ser formatadas em português."
+            )
 
 
     def recebe_capitulos_diarios(self):

@@ -35,13 +35,24 @@ jobs:
 
       - name: Run Pytest with secrets
         env:
-          API_ID_PAGINA_FACEBOOK: ${{ secrets.API_ID_PAGINA_FACEBOOK }}
+          # Discord
           API_KEY: ${{ secrets.API_KEY }}
-          API_TOKEN_PAGINA: ${{ secrets.API_TOKEN_PAGINA }}
           CANAL_LANCAMENTOS: ${{ secrets.CANAL_LANCAMENTOS }}
-          CANAL_TAGS: ${{ secrets.CANAL_TAGS }}
           CANAL_TESTES: ${{ secrets.CANAL_TESTES }}
+          CANAL_TAGS: ${{ secrets.CANAL_TAGS }}
+          # MongoDB Atlas
           URI_ATLAS: ${{ secrets.URI_ATLAS }}
+          # Facebook — produção
+          API_ID_PAGINA_FACEBOOK: ${{ secrets.API_ID_PAGINA_FACEBOOK }}
+          API_TOKEN_PAGINA: ${{ secrets.API_TOKEN_PAGINA }}
+          # Facebook — testes de integração (desabilitado na CI por padrão)
+          API_ID_PAGINA_FACEBOOK_TESTE: ${{ secrets.API_ID_PAGINA_FACEBOOK_TESTE }}
+          API_TOKEN_PAGINA_TESTE: ${{ secrets.API_TOKEN_PAGINA_TESTE }}
+          ENABLE_FB_TEST: "false"
+          # Google Gemini
+          GEMINI_API: ${{ secrets.GEMINI_API }}
+          # Web scraper
+          URL_SITE: ${{ secrets.URL_SITE }}
         run: |
           export PYTHONPATH=$(pwd)
           LC_ALL=pt_BR.UTF-8 LANG=pt_BR.UTF-8 python -m pytest -v
