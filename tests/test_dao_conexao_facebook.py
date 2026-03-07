@@ -12,79 +12,77 @@ from src.model.posts.post_facebook import PostFacebook
 
 class TestRegraDeNegocioFacebook:
     """
-    Testes de regra de negócio para postagem no Facebook.
+    Testes de regra de negócio para postagem no Facebook (whitelist).
     Estes testes não fazem chamadas à API — sempre executam.
     """
 
-    def test_obras_nao_permitidas_sao_removidas_da_lista(self):
+    def test_somente_obras_permitidas_sao_retornadas(self):
         """
-        Garante que obras na lista de não permitidas são excluídas
-        da lista de obras a postar no Facebook.
+        Apenas obras cujo título consta na whitelist devem ser retornadas.
         """
         lista_para_postar = [
             Obra("Obra A", "http://img.com/a.png", "http://site.com/a"),
             Obra("Obra B", "http://img.com/b.png", "http://site.com/b"),
             Obra("Obra C", "http://img.com/c.png", "http://site.com/c"),
         ]
-        nao_permitidas = [
-            {"titulo_obra": "Obra B"},
-            {"titulo_obra": "Obra C"},
+        permitidas = [
+            {"titulo_obra": "Obra A"},
         ]
 
-        resultado = ControllerObras.remover_obras_que_nao_pode_postar(
-            lista_para_postar, nao_permitidas
+        resultado = ControllerObras.filtrar_obras_permitidas_fb(
+            lista_para_postar, permitidas
         )
 
         assert len(resultado) == 1
         assert resultado[0].titulo_obra == "Obra A"
 
-    def test_lista_vazia_de_nao_permitidas_retorna_todas_as_obras(self):
+    def test_whitelist_vazia_retorna_lista_vazia(self):
         """
-        Com lista de não permitidas vazia, todas as obras devem ser retornadas.
+        Com a whitelist vazia, nenhuma obra deve ser retornada.
         """
         lista_para_postar = [
             Obra("Obra A", "http://img.com/a.png", "http://site.com/a"),
             Obra("Obra B", "http://img.com/b.png", "http://site.com/b"),
         ]
 
-        resultado = ControllerObras.remover_obras_que_nao_pode_postar(
+        resultado = ControllerObras.filtrar_obras_permitidas_fb(
             lista_para_postar, []
-        )
-
-        assert len(resultado) == 2
-
-    def test_todas_obras_nao_permitidas_retorna_lista_vazia(self):
-        """
-        Se todas as obras estiverem na lista de não permitidas,
-        o resultado deve ser uma lista vazia.
-        """
-        lista_para_postar = [
-            Obra("Obra A", "http://img.com/a.png", "http://site.com/a"),
-            Obra("Obra B", "http://img.com/b.png", "http://site.com/b"),
-        ]
-        nao_permitidas = [
-            {"titulo_obra": "Obra A"},
-            {"titulo_obra": "Obra B"},
-        ]
-
-        resultado = ControllerObras.remover_obras_que_nao_pode_postar(
-            lista_para_postar, nao_permitidas
         )
 
         assert len(resultado) == 0
 
-    def test_obra_nao_listada_como_nao_permitida_permanece(self):
+    def test_todas_obras_permitidas_retorna_lista_completa(self):
         """
-        Obras cujo título não consta na lista de não permitidas devem
-        ser mantidas na lista de postagem.
+        Se todas as obras estiverem na whitelist, todas devem ser retornadas.
+        """
+        lista_para_postar = [
+            Obra("Obra A", "http://img.com/a.png", "http://site.com/a"),
+            Obra("Obra B", "http://img.com/b.png", "http://site.com/b"),
+        ]
+        permitidas = [
+            {"titulo_obra": "Obra A"},
+            {"titulo_obra": "Obra B"},
+        ]
+
+        resultado = ControllerObras.filtrar_obras_permitidas_fb(
+            lista_para_postar, permitidas
+        )
+
+        assert len(resultado) == 2
+
+    def test_obra_nao_listada_na_whitelist_e_removida(self):
+        """
+        Obra ausente da whitelist não deve aparecer no resultado,
+        mesmo que não esteja em nenhuma lista de bloqueio.
         """
         lista_para_postar = [
             Obra("Obra Permitida", "http://img.com/p.png", "http://site.com/p"),
+            Obra("Obra Sem Permissao", "http://img.com/s.png", "http://site.com/s"),
         ]
-        nao_permitidas = [{"titulo_obra": "Outra Obra"}]
+        permitidas = [{"titulo_obra": "Obra Permitida"}]
 
-        resultado = ControllerObras.remover_obras_que_nao_pode_postar(
-            lista_para_postar, nao_permitidas
+        resultado = ControllerObras.filtrar_obras_permitidas_fb(
+            lista_para_postar, permitidas
         )
 
         assert len(resultado) == 1
@@ -121,6 +119,96 @@ class TestFlagEnableFbTest:
                 ConexaoFacebook.postar_anuncio_facebook(post_facebook)
 
         assert mock_post.call_count == 0
+
+
+class TestWhitelistFluxoPostagem:
+    """
+    Testes que validam o fluxo completo: whitelist do Atlas → postagem.
+
+    Simula o trecho do ControllerPostagem que consulta a whitelist e
+    chama ConexaoFacebook, garantindo que apenas obras autorizadas
+    chegam à API do Facebook.
+    """
+
+    def _simular_fluxo_fb(
+        self,
+        lista_obras: list,
+        whitelist: list,
+        mock_fb,
+    ) -> list:
+        """
+        Reproduz o trecho de postagem do FB de execucao_principal,
+        retornando os títulos das obras que foram efetivamente postadas.
+        """
+        obras_postadas = []
+
+        obras_permitidas = ControllerObras.filtrar_obras_permitidas_fb(
+            lista_obras, whitelist
+        )
+
+        for obra in obras_permitidas:
+            post = PostFacebook(obra, [])
+            cap = Capitulo("1", "http://site.com/cap1", "março 7, 2026")
+            post.lista_de_capitulos.append(cap)
+            mock_fb(post)
+            obras_postadas.append(obra.titulo_obra)
+
+        return obras_postadas
+
+    def test_obra_fora_da_whitelist_nao_e_postada(self):
+        """
+        Obra ausente da whitelist do Atlas não deve gerar chamada ao
+        Facebook, mesmo que tenha capítulos novos.
+        """
+        lista_obras = [
+            Obra("Obra Sem Permissao", "http://img.com/s.png", "http://site.com/s"),
+        ]
+        whitelist = []  # Atlas retorna vazio — nenhuma obra autorizada
+
+        mock_fb = MagicMock()
+        postadas = self._simular_fluxo_fb(lista_obras, whitelist, mock_fb)
+
+        assert mock_fb.call_count == 0
+        assert postadas == []
+
+    def test_obra_na_whitelist_e_postada(self):
+        """
+        Obra presente na whitelist do Atlas deve ser postada no Facebook.
+        """
+        lista_obras = [
+            Obra("Obra Permitida", "http://img.com/p.png", "http://site.com/p"),
+        ]
+        whitelist = [{"titulo_obra": "Obra Permitida"}]
+
+        mock_fb = MagicMock()
+        postadas = self._simular_fluxo_fb(lista_obras, whitelist, mock_fb)
+
+        assert mock_fb.call_count == 1
+        assert postadas == ["Obra Permitida"]
+
+    def test_apenas_obras_da_whitelist_sao_postadas(self):
+        """
+        Com múltiplas obras, apenas as presentes na whitelist devem
+        ser postadas; as demais devem ser ignoradas.
+        """
+        lista_obras = [
+            Obra("Obra A", "http://img.com/a.png", "http://site.com/a"),
+            Obra("Obra B", "http://img.com/b.png", "http://site.com/b"),
+            Obra("Obra C", "http://img.com/c.png", "http://site.com/c"),
+        ]
+        # Apenas A e C estão autorizadas
+        whitelist = [
+            {"titulo_obra": "Obra A"},
+            {"titulo_obra": "Obra C"},
+        ]
+
+        mock_fb = MagicMock()
+        postadas = self._simular_fluxo_fb(lista_obras, whitelist, mock_fb)
+
+        assert mock_fb.call_count == 2
+        assert "Obra A" in postadas
+        assert "Obra C" in postadas
+        assert "Obra B" not in postadas
 
 
 class TestConexaoFacebook:

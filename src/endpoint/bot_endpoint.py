@@ -127,16 +127,16 @@ async def atualizar_mensagem_obra(interaction: discord.Interaction, titulo: str,
 @app_commands.describe(
     titulo='Titulo que esta no site'
 )
-async def adicionar_obra_nao_permitida_fb(interaction: discord.Interaction, titulo: str):
-    """Obras nessa lista não são postadas no Facebook, por questões de direitos autorais."""
+async def adicionar_obra_permitida_fb(interaction: discord.Interaction, titulo: str):
+    """Obras nessa lista têm permissão explícita para serem postadas no Facebook."""
     try:
         dicionario_obra = {
-            "titulo_obra" : titulo
+            "titulo_obra": titulo
         }
 
-        atlas_dao.inserir_obra_nao_permitida_fb(dicionario_obra)
+        atlas_dao.inserir_obra_permitida_fb(dicionario_obra)
 
-        await interaction.response.send_message(f'{titulo} adicionada com sucesso!')
+        await interaction.response.send_message(f'{titulo} adicionada à whitelist do FB com sucesso!')
     except Exception as e:
         await interaction.response.send_message(f'Erro ao adicionar {titulo}: {e}')
 
@@ -183,16 +183,15 @@ async def listar_obras(interaction: discord.Interaction):
 
 #Comando para listar obras que estão no banco
 @client.tree.command()
-async def listar_obras_nao_permitidas_fb(interaction: discord.Interaction):
-    """Listar obras não permitidas para postagem no FB."""
+async def listar_obras_permitidas_fb(interaction: discord.Interaction):
+    """Listar obras com permissão para postagem no FB (whitelist)."""
 
-    cursor_obras = atlas_dao.listar_obras_nao_permitidas_fb()
-    colecao_obras = list(cursor_obras)  # Convertendo o cursor para uma lista de obras
+    colecao_obras = atlas_dao.listar_obras_permitidas_fb()
 
     max_docs_por_pagina = 10
 
     async def get_page(page: int):
-        emb = discord.Embed(title="Obras Não Permitidas FB", description="Obras que estão salvas no banco de dados.")
+        emb = discord.Embed(title="Obras Permitidas no FB", description="Obras com permissão explícita de postagem no Facebook.")
         offset = (page - 1) * max_docs_por_pagina
 
         parte_documentos = colecao_obras[offset:offset + max_docs_por_pagina]
@@ -202,7 +201,7 @@ async def listar_obras_nao_permitidas_fb(interaction: discord.Interaction):
 
         total_pages = Pagination.compute_total_pages(len(colecao_obras), max_docs_por_pagina)
         emb.set_footer(text=f"Página {page} de {total_pages}")
-        
+
         return emb, total_pages
 
     await Pagination(interaction, get_page).navegate()
@@ -272,7 +271,7 @@ async def informacoes_postagem(interaction: discord.Interaction):
     embed.add_field(name="Horários de verificação", value="12h, 16h, 18h, 20h e 22h", inline=False)
     embed.add_field(name="Adicionar obras novas", value="Use /adicionar_obra(Também atualiza os já adicionados se o título for o mesmo), /listar_obras e /remover_obra.", inline=False)
     embed.add_field(name="Gerenciar Postagem", value="Use /forcar_postagem e /excluir_registros.", inline=False)
-    embed.add_field(name="Gerenciar obras não permitidas no FB", value="Use /adicionar_obra_nao_permitida_fb e /listar_obra_nao_permitida_fb .", inline=False)
+    embed.add_field(name="Gerenciar whitelist do FB", value="Use /adicionar_obra_permitida_fb e /listar_obras_permitidas_fb .", inline=False)
     embed.add_field(name="Comandos utilitários", value="/ping, /joined e /informacoes_postagem .", inline=False)
     embed.add_field(name="Versão em execução", value="3.0.0", inline=False)
 

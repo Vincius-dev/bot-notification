@@ -66,11 +66,11 @@ class ControllerPostagem:
 
                 time.sleep(10)
 
-            # Postagem do FB
-            lista_de_obras_nao_permitidas = atlas_dao.listar_obras_nao_permitidas_fb()
+            # Postagem do FB — apenas obras com permissão explícita (whitelist)
+            lista_de_obras_permitidas_fb = atlas_dao.listar_obras_permitidas_fb()
 
-            lista_de_obras_facebook = ControllerObras.remover_obras_que_nao_pode_postar(
-                lista_de_obras_atualizada, lista_de_obras_nao_permitidas
+            lista_de_obras_facebook = ControllerObras.filtrar_obras_permitidas_fb(
+                lista_de_obras_atualizada, lista_de_obras_permitidas_fb
             )
 
             for obra in lista_de_obras_facebook:

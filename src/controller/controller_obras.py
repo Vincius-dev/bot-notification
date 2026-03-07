@@ -30,22 +30,33 @@ class ControllerObras:
         return obras_registradas
 
 
-    """
-    Remove obras que não podem ser postadas.
-    Args:
-        lista_de_obras_para_postar (list): Lista de obras para postar.
-        lista_de_obras_nao_permitidas (list): Lista de obras não permitidas.
-    Returns:
-        list: Lista de obras filtradas, sem as obras não permitidas.
-    """
-    def remover_obras_que_nao_pode_postar(lista_de_obras_para_postar, lista_de_obras_nao_permitidas):
-        titulos_obras_nao_permitidas = [obra['titulo_obra'] for obra in lista_de_obras_nao_permitidas]
+    def filtrar_obras_permitidas_fb(
+        lista_de_obras_para_postar: list,
+        lista_de_obras_permitidas: list
+    ) -> list:
+        """
+        Retorna apenas as obras que possuem permissão explícita de
+        postagem no Facebook (whitelist).
 
-        obras_filtradas = [
+        Obras que não estiverem na lista de permitidas são removidas,
+        independente de qualquer outro critério.
+
+        Args:
+            lista_de_obras_para_postar (list): obras candidatas à postagem.
+            lista_de_obras_permitidas (list): documentos com 'titulo_obra'
+                das obras autorizadas.
+
+        Returns:
+            list: obras presentes em lista_de_obras_permitidas.
+        """
+        titulos_permitidos = {
+            obra['titulo_obra'] for obra in lista_de_obras_permitidas
+        }
+
+        return [
             obra for obra in lista_de_obras_para_postar
-            if obra.titulo_obra not in titulos_obras_nao_permitidas
+            if obra.titulo_obra in titulos_permitidos
         ]
-        return obras_filtradas
 
 
     """
