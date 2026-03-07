@@ -70,6 +70,8 @@ def _criar_indices(db: Any) -> None:
     )
 
 
+
+
 def seed(uri: str) -> None:
     """
     Cria as coleções e índices no banco 'DadosPostagem'.

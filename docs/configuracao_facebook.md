@@ -94,9 +94,13 @@ O `access_token` e o `id` corretos são os da **página**, não do usuário. Par
 
 ---
 
-## 5. Converter para token de longa duração (produção)
+## 5. Obter token permanente de página (produção)
 
-O token gerado pelo Explorer tem validade de **~1 hora**. Para uso em produção, converta para um token de longa duração (~60 dias):
+O token de Usuário gerado pelo Explorer tem validade de **~1 hora**. Para uso em produção você precisa de um **Page Access Token permanente** (sem expiração). Há duas formas de obtê-lo:
+
+### Opção 1: Via chamada OAuth direta
+
+**Passo 1 — Converter o User Token em token de longa duração (~60 dias):**
 
 ```
 GET https://graph.facebook.com/v25.0/oauth/access_token
@@ -107,9 +111,30 @@ GET https://graph.facebook.com/v25.0/oauth/access_token
 ```
 
 - `APP_ID` e `APP_SECRET`: encontrados em **Painel do App → Configurações → Básico**
-- Substitua `{TOKEN_CURTA_DURACAO}` pelo token gerado no Explorer
+- Substitua `{TOKEN_CURTA_DURACAO}` pelo User Token gerado no Explorer
 
-O token retornado tem validade de ~60 dias. Para renovação automática, consulte a [documentação de tokens da Meta](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived/).
+**Passo 2 — Obter o Page Token permanente a partir do token longo:**
+
+Com o token de 60 dias em mãos, repita a chamada da seção 4 (`GET /me/accounts`) usando esse token no cabeçalho de autorização. O `access_token` retornado dentro de `data[]` para a sua página será **permanente** (sem data de expiração).
+
+Para renovação automática, consulte a [documentação de tokens da Meta](https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived/).
+
+---
+
+### Opção 2: Via Ferramenta de Token do Facebook (sem código — mais rápido)
+
+O Facebook possui um botão "escondido" que executa toda a troca OAuth por você direto na interface do Explorador de API.
+
+1. No **Explorador de API do Graph**, gere um User Token curto como descrito na seção 4.
+2. Clique no **ícone azul de informação (ⓘ)** que fica logo ao lado do token exibido na caixa azul.
+3. No balão que abrir, clique em **"Abrir na Ferramenta de Token de Acesso"**.
+4. Uma nova aba será aberta. Role até o final da página e clique no botão azul **"Estender token de acesso"**.
+5. O token de 60 dias será gerado na hora — **copie-o**.
+6. Volte para o Explorador de API, **cole esse token longo** na caixa azul (substituindo o token antigo).
+7. No seletor **"Usuário ou Página"**, escolha a sua Página.
+8. O token gerado após a seleção da página é o **Page Access Token permanente** (sem expiração). Copie-o.
+
+> ℹ️ Esse é o mesmo token que a Opção 1 produziria — a ferramenta apenas automatiza a chamada `oauth/access_token` por baixo dos panos.
 
 ---
 

@@ -37,6 +37,15 @@ cmd_venv() {
     printf "${GREEN}>> Pronto! Ative o venv com: source venv/bin/activate${NC}\n"
 }
 
+_ativar_venv() {
+    if [ -f "venv/bin/activate" ]; then
+        . venv/bin/activate
+    else
+        printf "${RED}Venv não encontrado. Execute a opção 1 primeiro.${NC}\n"
+        return 1
+    fi
+}
+
 cmd_mongo_up() {
     printf "${GREEN}>> Subindo MongoDB local...${NC}\n"
     docker compose up mongo -d
@@ -44,11 +53,13 @@ cmd_mongo_up() {
 }
 
 cmd_seed() {
+    _ativar_venv || return
     printf "${GREEN}>> Criando coleções e índices no banco local...${NC}\n"
     python3 scripts/seed_dev_db.py
 }
 
 cmd_tests() {
+    _ativar_venv || return
     printf "${GREEN}>> Executando testes...${NC}\n"
     pytest
 }

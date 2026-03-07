@@ -60,6 +60,12 @@ goto MENU
 :: -----------------------------------------------------------------------------
 :SEED
 echo.
+if not exist venv\Scripts\activate.bat (
+    echo Venv nao encontrado. Execute a opcao 1 primeiro.
+    pause
+    goto MENU
+)
+call venv\Scripts\activate.bat
 echo ^>^> Criando colecoes e indices no banco local...
 python scripts\seed_dev_db.py
 pause
@@ -68,6 +74,12 @@ goto MENU
 :: -----------------------------------------------------------------------------
 :TESTS
 echo.
+if not exist venv\Scripts\activate.bat (
+    echo Venv nao encontrado. Execute a opcao 1 primeiro.
+    pause
+    goto MENU
+)
+call venv\Scripts\activate.bat
 echo ^>^> Executando testes...
 pytest
 pause
