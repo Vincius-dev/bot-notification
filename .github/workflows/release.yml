@@ -19,7 +19,7 @@ jobs:
           fetch-depth: 0
 
       - name: Gerar CHANGELOG com git-cliff
-        uses: orhun/git-cliff-action@v3
+        uses: orhun/git-cliff-action@v4
         id: git_cliff
         with:
           config: cliff.toml
