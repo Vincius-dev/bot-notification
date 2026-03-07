@@ -37,7 +37,7 @@ API_ID_PAGINA_FACEBOOK = id_numerico_da_pagina_facebook
 
 # Token de acesso de longa duração da página do Facebook (produção).
 # Gerado via: https://developers.facebook.com/tools/explorer/
-# Permissões necessárias: pages_manage_posts, pages_read_engagement, publish_to_groups
+# Permissões necessárias: pages_manage_posts, pages_read_engagement
 API_TOKEN_PAGINA = token_de_acesso_da_pagina_facebook
 
 # =============================================================================
