@@ -14,6 +14,7 @@ node_modules/
 
 # Credenciais de Ambiente
 .env
+.env.dev
 
 
 ## cache python
